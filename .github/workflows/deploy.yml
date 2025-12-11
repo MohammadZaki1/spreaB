@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ECR_REGION: ap-south-1
+      ECR_REGION: us-east-2
       ECR_ACCOUNT_ID: your-account-id
       EC2_USER: ec2-user
       EC2_HOST: your.ec2.public.ip
@@ -24,7 +24,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
+          aws-region: us-east-2
 
       # ------------------------
       # BACKEND (Docker + ECR)
