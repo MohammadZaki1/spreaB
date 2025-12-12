@@ -10,15 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ECR_REGION: us-east-2
-      ECR_ACCOUNT_ID: your-account-id
       EC2_USER: ec2-user
       EC2_HOST: your.ec2.public.ip
 
     steps:
+      # ------------------------
+      # 1️⃣ Checkout Code
+      # ------------------------
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # ------------------------
+      # 2️⃣ Configure AWS credentials
+      # ------------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -27,20 +31,24 @@ jobs:
           aws-region: us-east-2
 
       # ------------------------
-      # BACKEND (Docker + ECR)
+      # 3️⃣ Login to Amazon Public ECR
       # ------------------------
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECR Public
         run: |
-          aws ecr get-login-password --region $ECR_REGION | docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com
+          aws ecr-public get-login-password --region us-east-1 | \
+          docker login --username AWS --password-stdin public.ecr.aws/v8a6y7y7
 
+      # ------------------------
+      # 4️⃣ Build & Push Backend Docker Image
+      # ------------------------
       - name: Build & Push Backend Docker Image
         run: |
           docker build -t backend ./spreadb_project-main
-          docker tag backend:latest $ECR_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/backend:latest
-          docker push $ECR_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/backend:latest
+          docker tag backend:latest public.ecr.aws/v8a6y7y7/spreadb-public:latest
+          docker push public.ecr.aws/v8a6y7y7/spreadb-public:latest
 
       # ------------------------
-      # FRONTEND BUILD
+      # 5️⃣ Build Frontend
       # ------------------------
       - name: Build Frontend
         run: |
@@ -49,7 +57,7 @@ jobs:
           npm run build
 
       # ------------------------
-      # COPY FRONTEND BUILD → EC2
+      # 6️⃣ Upload Frontend to EC2
       # ------------------------
       - name: Upload frontend files to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -61,7 +69,7 @@ jobs:
           target: "/home/ec2-user/frontend-temp/"
 
       # ------------------------
-      # RESTART BACKEND + MOVE FRONTEND FILES
+      # 7️⃣ Deploy Backend & Frontend on EC2
       # ------------------------
       - name: Connect & Deploy on EC2
         uses: appleboy/ssh-action@v0.1.9
@@ -72,20 +80,19 @@ jobs:
           script: |
             echo "=== Backend Deploy ==="
 
-            docker pull $ECR_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/backend:latest
+            docker pull public.ecr.aws/v8a6y7y7/spreadb-public:latest
 
             docker stop backend || true
             docker rm backend || true
 
             docker run -d --name backend -p 3001:3001 \
               -e NODE_ENV=production \
-              $ECR_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/backend:latest
+              public.ecr.aws/v8a6y7y7/spreadb-public:latest
 
             echo "=== Frontend Deploy ==="
 
             sudo rm -rf /usr/share/nginx/html/*
             sudo cp -r /home/ec2-user/frontend-temp/* /usr/share/nginx/html/
-
             sudo systemctl restart nginx
 
             echo "Deployment Completed!"
