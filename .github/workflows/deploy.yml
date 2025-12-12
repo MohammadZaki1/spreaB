@@ -11,7 +11,7 @@ jobs:
 
     env:
       EC2_USER: ec2-user
-      EC2_HOST: your.ec2.public.ip
+      EC2_HOST: ${{ secrets.EC2_HOST }}
 
     steps:
       # ------------------------
@@ -40,7 +40,30 @@ jobs:
 
       # ------------------------
       # 4️⃣ Build & Push Backend Docker Image
-      # ------------
+      # ------------------------
+      - name: Build & Push Backend Docker Image
+        run: |
+          docker build -t backend ./spreadb_project-main
+          docker tag backend:latest public.ecr.aws/v8a6y7y7/spreadb-public:latest
+          docker push public.ecr.aws/v8a6y7y7/spreadb-public:latest
+
+      # ------------------------
+      # 5️⃣ Build Frontend
+      # ------------------------
+      - name: Build Frontend
+        run: |
+          cd spreadb_frontend-main
+          npm install
+          CI=false npm run build
+
+      # ------------------------
+      # 6️⃣ Upload Frontend to EC2 (SCP)
+      # ------------------------
+      - name: Upload frontend files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "spreadb_frontend-main/build/*"
           target: "/home/ec2-user/frontend-temp/"
@@ -56,7 +79,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "=== Backend Deploy ==="
-
             docker pull public.ecr.aws/v8a6y7y7/spreadb-public:latest
 
             docker stop backend || true
@@ -67,9 +89,8 @@ jobs:
               public.ecr.aws/v8a6y7y7/spreadb-public:latest
 
             echo "=== Frontend Deploy ==="
-
             sudo rm -rf /usr/share/nginx/html/*
             sudo cp -r /home/ec2-user/frontend-temp/* /usr/share/nginx/html/
             sudo systemctl restart nginx
 
-            echo "Deployment Completed!"
+            echo "🚀 Deployment Completed!"
