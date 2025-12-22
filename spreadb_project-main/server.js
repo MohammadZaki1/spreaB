@@ -18,7 +18,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000","https://spreadbfrontend.vercel.app" ], // frontend URL
+    origin: ["http://localhost:3000","https://spreadbfrontend.vercel.app","http://3.145.0.154"], // frontend URL
     credentials: true,
   })
 );
