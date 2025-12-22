@@ -334,7 +334,7 @@ const App = () => {
                 <Route path="/influencer/applied" element={
                   <ProtectedRoute allowedRoles={['Influencer']}>
 
-                    <AppliedPromotions />
+                  //  <AppliedPromotions />
 
                   </ProtectedRoute>
                 } />
