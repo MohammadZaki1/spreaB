@@ -1,10 +1,15 @@
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create folder if not exists
 const uploadDir = path.join(__dirname, "../uploads/profilePhoto");
-//const uploadDir = path.join(__dirname, "../uploads/promotions");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -30,32 +35,4 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter });
 
-module.exports = upload;
-
-
-
-
-
-// import multer from "multer";
-// import path from "path";
-// import fs from "fs";
-
-// // Create uploads folder if not exists
-// const uploadDir = "uploads";
-// if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, uploadDir);
-//   },
-//   filename: function (req, file, cb) {
-//     cb(
-//       null,
-//       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-//     );
-//   },
-// });
-
-// const upload = multer({ storage });
-
-// export default upload;
+export default upload;
