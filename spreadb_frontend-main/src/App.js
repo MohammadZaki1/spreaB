@@ -51,7 +51,7 @@ import PromotionDisplay from "./pages/PromotionDisplay.jsx";
 import EditPromotion from "./pages/Editpromotion.jsx";
 import InfluencerDashboard from "./pages/InfluencerDashboard.jsx";
 import InfluencerPromotionDisplay from "./pages/InfluencerPromotionDisplay.jsx";
-import FindPromotions from "./pages/FindPromotions.jsx"
+//import FindPromotions from "./pages/FindPromotions.jsx"
 import InfluencerProfileForm from "./pages/InfluencerProfileForm";
 import Careers from "./pages/Careers.jsx";
 import TalentMarketPlace from "./pages/TalentMarketPlace.jsx";
